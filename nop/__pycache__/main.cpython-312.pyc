@@ -1,0 +1,43 @@
+
+import numpy as np
+from data_utils import load_dataset, preprocess_dataset
+from regression_models import build_model
+from plot_utils import plot_results
+
+def get_user_input():
+    print("Enter house features:")
+    area = float(input("Area: "))
+    bedrooms = int(input("Bedrooms: "))
+    bathrooms = int(input("Bathrooms: "))
+    return np.array([[area, bedrooms, bathrooms]])
+
+def execute_pipeline():
+    data = load_dataset()
+    X, y = preprocess_dataset(data)
+
+    # Train LASSO
+    lasso_model = build_model(model_type="lasso")
+    lasso_model.train_model(X, y)
+    lasso_preds = lasso_model.generate_predictions(X)
+
+    # Train Linear Regression
+    linear_model = build_model(model_type="linear")
+    linear_model.train_model(X, y)
+    linear_preds = linear_model.generate_predictions(X)
+
+    # Compare
+    lasso_error = np.mean((y - lasso_preds)**2)
+    linear_error = np.mean((y - linear_preds)**2)
+
+    print("LASSO MSE:", lasso_error)
+    print("Linear MSE:", linear_error)
+
+    # User prediction
+    user_data = get_user_input()
+    price = lasso_model.generate_predictions(user_data)
+    print("Predicted Price:", price[0])
+
+    plot_results(y, lasso_preds)
+
+if __name__ == "__main__":
+    execute_pipeline()
